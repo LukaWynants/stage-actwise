@@ -1,1 +1,1 @@
-![Alt text](C:\Users\legoy\Documents\AP-Hogeschool\stage\stage-actwise\ransomware\diagram\dropper.png)
+![Alt text](ransomware\diagram\dropper.png)
