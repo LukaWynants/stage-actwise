@@ -1,0 +1,80 @@
+<mxfile host="Electron" modified="2025-03-13T14:43:43.210Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.2 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="s4vR9c5GaN88JyXAic0E" version="22.0.2" type="device">
+  <diagram name="Page-1" id="B6ht7hdsYMJA1cn_7bjE">
+    <mxGraphModel dx="1823" dy="866" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-1" target="EMDbq6eZ5B8t_uPj6TfR-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-1" value="Dropper" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="140" width="90" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-2" target="EMDbq6eZ5B8t_uPj6TfR-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-2" target="EMDbq6eZ5B8t_uPj6TfR-12">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-2" value="Has admin privelages?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="210" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-5" target="EMDbq6eZ5B8t_uPj6TfR-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-5" value="ask to run with admin privelages" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="220" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-7" value="no" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="110" y="220" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-9" value="yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="70" y="260" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-12" target="EMDbq6eZ5B8t_uPj6TfR-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-12" value="Create drop folder" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="300" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-15" target="EMDbq6eZ5B8t_uPj6TfR-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-15" value="exclude folder from antivirus" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="370" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-17" target="EMDbq6eZ5B8t_uPj6TfR-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-17" value="Recreate obfscated malicious B64 code" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="430" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-19" target="EMDbq6eZ5B8t_uPj6TfR-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-19" value="Decode malicious B64 payload" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="510" width="90" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-21" target="EMDbq6eZ5B8t_uPj6TfR-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-21" value="Write malicious code to excluded folder" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="580" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="EMDbq6eZ5B8t_uPj6TfR-23" target="EMDbq6eZ5B8t_uPj6TfR-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-23" value="start a service as admin to run the malicious code" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="660" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EMDbq6eZ5B8t_uPj6TfR-26" value="END" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="740" width="90" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
