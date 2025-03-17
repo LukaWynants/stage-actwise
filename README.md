@@ -1,1 +1,1 @@
-![Alt text](ransomware\diagram\dropper.png)
+![Alt text](ransomware/diagram/dropper.png)
