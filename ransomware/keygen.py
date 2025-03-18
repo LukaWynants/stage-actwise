@@ -49,13 +49,16 @@ class Encryption:
         with open(self.private_keyfile, "wb") as private_keyfile:
             private_keyfile.write(private_key.save_pkcs1("PEM"))
 
-    def load_public_key(self):
+    def load_public_key(self, key_string=""):
         """
         a method to load the public key 
 
         """
-        with open(self.public_keyfile, "rb") as public_keyfile:
-            self.public_key = rsa.PublicKey.load_pkcs1(public_keyfile.read())
+        if key_string == "":
+            with open(self.public_keyfile, "rb") as public_keyfile:
+                self.public_key = rsa.PublicKey.load_pkcs1(public_keyfile.read())
+        else:
+            self.public_key = rsa.PublicKey.load_pkcs1(key_string)
 
     def load_private_key(self):
         """

