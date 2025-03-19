@@ -46,10 +46,6 @@ class Symmetric_encryption:
         decipher = AES.new(self.AES_key, AES.MODE_CBC, self.iv)
         decrypted_data = unpad(decipher.decrypt(cipher_text), AES.block_size)
         print(f"Decrypted data: {decrypted_data}")
-        
-
-        
-        
 
 
 if __name__=="__main__":

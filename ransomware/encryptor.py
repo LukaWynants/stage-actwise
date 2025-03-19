@@ -110,10 +110,15 @@ class Encryptor:
             
             # TODO: encryptielogica
             try:
-                pass
+
+                # open file 
+
+                #encrypt data
+                encrypted_content = symenc.encrypt_string("test")
+                print(f"{encrypted_content}" )
                     
-                #encrypt content
-                    
+                
+                
                 #open new file with .ENC enxtension
                     #add encrypted content
                     #add footer
@@ -176,8 +181,6 @@ class Encryptor:
         """
         threads = self.determine_thread_count()
         #threads = 40
-
-        # Get out all files from USER folder first as a seperate list
 
         #split list by amount of threads
 

