@@ -60,12 +60,16 @@ class Encryption:
         else:
             self.public_key = rsa.PublicKey.load_pkcs1(key_string)
 
-    def load_private_key(self):
+    def load_private_key(self, key_string=""):
         """
         a method to load a private key linked to the victims public key to decrypt the exfiltrated data
         """
-        with open(self.private_keyfile, "rb") as private_keyfile:
-            self.private_key = rsa.PrivateKey.load_pkcs1(private_keyfile.read())
+        if key_string == "":
+            with open(self.private_keyfile, "rb") as private_keyfile:
+                self.private_key = rsa.PrivateKey.load_pkcs1(private_keyfile.read())
+        else:
+            self.private_key = rsa.PrivateKey.load_pkcs1(key_string)
+
         
 
     def encrypt(self, data):

