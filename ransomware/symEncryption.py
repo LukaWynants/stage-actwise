@@ -36,11 +36,9 @@ class Symmetric_encryption:
 
         cipher_text = cipher.encrypt(padded_data) #encrypt the padded text
 
-        print(f"Encrypted data: {cipher_text}")
-
-        footer = self.create_footer()
+        #print(f"Encrypted data: {cipher_text}")
         
-        return cipher_text, footer
+        return cipher_text
 
     def decrypt_string(self, cipher_text):
         decipher = AES.new(self.AES_key, AES.MODE_CBC, self.iv)

