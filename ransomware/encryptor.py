@@ -161,7 +161,7 @@ class Encryptor:
         encrypted_key = keygen.encrypt(AES_key)
         #print(f"footer: {encrypted_iv} {encrypted_key}")
         #create footer
-        return f"{encrypted_iv} {encrypted_key}"
+        return f"{encrypted_iv}\n --- \n{encrypted_key}"
     
     @staticmethod
     def determine_thread_count():
