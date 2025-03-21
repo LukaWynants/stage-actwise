@@ -28,8 +28,8 @@ class Symmetric_encryption:
         """
         a function which encrypts plain text
         """
-        plain_text_bytes = plain_text.encode('utf-8')
-        padded_data = pad(plain_text_bytes, AES.block_size) #pad the data to be a multiple of 16
+        #plain_text_bytes = plain_text.encode('utf-8')
+        padded_data = pad(plain_text, AES.block_size) #pad the data to be a multiple of 16
 
         
         cipher = AES.new(self.AES_key, AES.MODE_CBC, self.iv) #create AES cipher object using CBC mode
