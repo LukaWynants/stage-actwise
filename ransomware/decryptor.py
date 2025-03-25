@@ -119,6 +119,7 @@ class Decryptor:
         while files_list:
 
             filepath = files_list.popleft()  # Verwijder bestand uit deque (O(1))
+            #print(filepath)
 
             try:
                 # open file 
@@ -127,6 +128,10 @@ class Decryptor:
 
                     # split the file into, part encrypted by AES key and the AES key, which is encrypted by the public key of the attacker
                     parts = data.split(b"\n---\n")
+
+                    if len(parts) < 3:
+                        print(f"[LOG] Skipping {filepath} - incorrect file format")
+                        continue
 
                     encrypted_content = parts[0].strip()
                     encrypted_IV = parts[1].strip()
@@ -137,6 +142,7 @@ class Decryptor:
                     print(f"[LOG] footer unchanged, using same AES key: {AES_key}")
 
                 else:
+                    # if a new footer is detected it should be extracted and decrypted
                     print("[LOG] New footer detected, decrypting AES key")
                     decrypted_iv, decrypted_AES_key = self.decrypt_footer(encrypted_IV, encrypted_AES_key)
 
@@ -181,7 +187,7 @@ class Decryptor:
             end = start + avg_len + (1 if i < remainder else 0)
             result.append(self.filepaths[start:end])  # Append the split list to result
             start = end  # Update start index for next chunk
-        print(result)
+        
         start_time = time.time()
 
         #verwerk decryptie met een thread pool
@@ -195,7 +201,7 @@ class Decryptor:
 
 if __name__ == "__main__":
     
-    decrypt = Decryptor("""
+    decryptor = Decryptor("""
 -----BEGIN RSA PRIVATE KEY-----
 MIICYAIBAAKBgQCPenTmm5+aJEe6rEFHwwESezFZGv2aZUvZG3muGPRramrhOc9s
 XYnX1gFew3EzgTgzJcSyiBYD4TIzHwBduqzpAQhlo2NgEoiYFtaGge/YmNXLPV7w
@@ -213,8 +219,9 @@ rIm8EArVVAlDeDOVgjgKxdnMbgB9wnvB+kjxhjJrcZBbZOtR
 -----END RSA PRIVATE KEY-----
     """)
 
-    decrypt.scan_drives()
-    decrypt.get_files()
-    decrypt.start_decryption_process()
+    decryptor.scan_drives()
+    decryptor.get_files()
+    #decryptor.decrypt()
+    decryptor.start_decryption_process()
 
 
