@@ -8,3 +8,4 @@
 ![Alt text](ransomware/diagram/encryption_process.png)
 
 
+#Add-MpPreference -ExclusionProcess "malicious.exe" #exclude a process
